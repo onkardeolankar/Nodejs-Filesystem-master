@@ -1,51 +1,36 @@
-const express=require('express');
-const dotenv=require('dotenv');
-const path=require('path');
-const fs = require('fs');
+const { time } = require('console')
+const { text } = require('express')
+const express = require('express')
+const app = express()
+const fs = require('fs')
 
-const app=express();
-dotenv.config();
+let timeStamp = new Date()
+let date = timeStamp.toDateString()
+let hours = timeStamp.getHours()
+let minutes = timeStamp.getMinutes()
+let seconds = timeStamp.getSeconds()
+let dateTime = `${date} - ${hours};${minutes};${seconds}`
 
-const PORT=process.env.PORT || 3000;
-const dir = path.resolve(path.join(__dirname, 'Files'));
+fs.appendFile(`./TimeStamp/${dateTime}`, `${timeStamp}`, function (err) {
+  if (err) {
+    console.log(err)
+  } else {
+    console.log('done')
+  }
+})
 
-if (!fs.existsSync(dir)) {
-  fs.mkdirSync(dir);
-}
+fs.readdir('./TimeStamp', (err, files) => {
+  if (err) console.log(err)
+  else {
+    app.get('/', function (req, res) {
+      res.send(files)
+    })
+  }
+  console.log(files)
+})
 
-app.get('/',(req,res,next)=>{
-    res.send("hello world");
- });
-
-app.get('/createfile',(req,res,next)=>{
-    var today = new Date();
-    var date = "Date-"+ today.getDate()+'/'+(today.getMonth()+1)+'/'+today.getFullYear();
-    var time = "Time-"+ today.getHours() + " hours " + today.getMinutes() + " minutes " + today.getSeconds() + " seconds";
-    var date = date+' '+time;
-
-    var filename=`${date}.txt`;
-    const link = path.resolve(path.join(dir,filename));
-
-    fs.writeFile(link,filename,(err) =>{
-            console.log(err);
-        });   
-res.send(`${filename} created successfully`);
-});
-
-fs.access("./Files", function(error) {
-    if (error) {
-      console.log("Directory does not exist.")
-    } else {
-      console.log("Directory exists.")
-    }
-});
-
-app.get("/getfile", (req, res) => {
-    let files = fs.readdirSync("./Files");
-    console.log(files);
-    res.send(files);
-});
-
-app.listen(PORT,()=>{
-  console.log("SERVER STARTED")
-});
+const PORT = process.env.PORT || 8000
+app.listen(PORT, () => {
+  console.log(`App listening on port ${PORT}`)
+  console.log('Press Ctrl+C to quit.')
+})
